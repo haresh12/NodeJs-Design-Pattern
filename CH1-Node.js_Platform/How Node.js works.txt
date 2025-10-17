@@ -16,7 +16,8 @@ Human inputs (clicks, typing) are even slower.
 
 Result: if your program waits (blocks) for I/O, the CPU sits idle doing nothing — wasteful.
 
-Analogy: CPU is a chef. RAM is chopped ingredients on counter (fast). Disk/network are grocery deliveries from far away (slow). Chef must not stand idle waiting for deliveries.
+Analogy: CPU is a chef. RAM is chopped ingredients on counter (fast). Disk/network are grocery deliveries from far away (slow).
+ Chef must not stand idle waiting for deliveries.
 
 3) Blocking I/O — the naive way (and why it sucks)
 
@@ -28,7 +29,8 @@ data = socket.read()  // blocks until data arrives
 print(data)
 
 
-Problem: If you block for each connection, you need a separate thread for each connection. Threads cost memory and CPU (context switches). If many connections exist, system gets overloaded.
+Problem: If you block for each connection, you need a separate thread for each connection. 
+Threads cost memory and CPU (context switches). If many connections exist, system gets overloaded.
 
 Analogy: One cashier at a store serves one customer at a time and must stay with them until they finish — long lines form.
 
@@ -53,7 +55,9 @@ Analogy: A security guard repeatedly opening the door every second to check if m
 
 OSs provide a better mechanism: an event demultiplexer (names: epoll on Linux, kqueue on macOS, IOCP on Windows).
 
-What it does: you tell it “watch these resources (sockets/files). Wake me up when any has data ready.” It blocks but cheaply (the OS waits), and only returns when something is ready.
+What it does: you tell it “watch these resources (sockets/files).
+ Wake me up when any has data ready.” It blocks but cheaply (the OS waits),
+ and only returns when something is ready.
 
 Your program calls the demultiplexer and it blocks inside the OS, not busy-looping in your code.
 
@@ -87,7 +91,8 @@ handlers can start new async requests
 
 repeat
 
-Analogy: A receptionist (event loop) gets notified by sensors (demultiplexer) when customers arrive and then calls the correct assistant (handler).
+Analogy: A receptionist (event loop) gets notified by sensors (demultiplexer) when customers arrive
+ and then calls the correct assistant (handler).
 
 7) Reactor pattern — callbacks + event loop
 
@@ -111,7 +116,8 @@ Analogy: Place an order (I/O) and give your phone number (callback). When order 
 
 8) libuv — the glue between OS and Node.js
 
-Operating systems differ (Linux has epoll, macOS kqueue, Windows IOCP). Also, some operations (like file reads) may not be non-blocking on certain OSs.
+Operating systems differ (Linux has epoll, macOS kqueue, Windows IOCP).
+Also, some operations (like file reads) may not be non-blocking on certain OSs.
 
 libuv is a cross-platform native C library that:
 
@@ -139,7 +145,8 @@ When single thread is great: I/O-heavy apps (web servers, APIs) — many concurr
 
 When it’s not ideal: CPU-heavy tasks (large computations) can block the single thread — use worker threads or offload work.
 
-Analogy: A single radio host (JS thread) coordinates many calls (I/O) through the studio’s staff (libuv + threadpool), but heavyweight editing (CPU tasks) needs a separate studio.
+Analogy: A single radio host (JS thread) coordinates many calls (I/O) through the studio’s staff (libuv + threadpool),
+but heavyweight editing (CPU tasks) needs a separate studio.
 
 10) The Node.js “recipe” — what it’s made of
 
@@ -234,19 +241,24 @@ Good for I/O-heavy apps; avoid heavy CPU work on main thread.
 ❓ Possible Questions & Answers (likely for interviews / revision)
 
 Q1. Why does Node.js use a single thread?
-A1. To avoid in-process race conditions and to efficiently handle many I/O-bound operations by using an event loop and OS-level demultiplexing instead of many costly threads.
+A1. To avoid in-process race conditions and to efficiently handle many I/O-bound operations
+by using an event loop and OS-level demultiplexing instead of many costly threads.
 
 Q2. What is libuv and why is it important?
-A2. libuv is a native library that implements the event loop, abstracts OS differences (epoll/kqueue/IOCP), provides async I/O and a threadpool — it’s the low-level I/O engine of Node.js.
+A2. libuv is a native library that implements the event loop, 
+ abstracts OS differences (epoll/kqueue/IOCP), provides async I/O and a threadpool — 
+ it’s the low-level I/O engine of Node.js.
 
 Q3. Explain the reactor pattern in simple words.
-A3. You register what to do when I/O completes (a handler). The system watches resources and when one is ready it calls your handler. So you don’t wait — you react when the event happens.
+A3. You register what to do when I/O completes (a handler). The system watches resources and
+ when one is ready it calls your handler. So you don’t wait — you react when the event happens.
 
 Q4. What is the difference between busy-waiting and using the event demultiplexer?
 A4. Busy-waiting constantly checks for data and wastes CPU. The demultiplexer waits efficiently in the OS and only wakes your program when something is ready.
 
 Q5. When would Node.js be a poor choice?
-A5. For CPU-heavy tasks (e.g., video encoding, heavy computations) that block the event loop. Use worker threads or separate services for such tasks.
+A5. For CPU-heavy tasks (e.g., video encoding, heavy computations) that block the event loop. 
+Use worker threads or separate services for such tasks.
 
 Q6. What happens when there are no more events or pending I/O?
 A6. The Node.js process exits — nothing left to do.
